@@ -12,6 +12,24 @@ const register = async (req, res) => {
     res.status(501).json({ message: error.message });
   }
 };
+const login = async (req, res) => {
+  try {
+    const userData = req.body;
+    const { token, userId } = await authService.login(userData);
+    res.status(200).json({
+      message: "User Logged in Successfully",
+      userId: userId,
+      token: token,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+const getData =async(req,res)=>{
+   res.send("U acessed privateData");
+}
 module.exports = {
   register,
+  login,
+  getData
 };
