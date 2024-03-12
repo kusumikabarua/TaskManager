@@ -33,7 +33,7 @@ const login = async(userData)=>{
         if(!isMatching){
             throw new Error("Invalid Credentials");
         }
-        const token = jwt.sign({user : user._id},process.env.JWT_SECRET);
+        const token = jwt.sign({id : user._id},process.env.JWT_SECRET);
         return {token : token, userId : user._id};
 
     }catch (error) {

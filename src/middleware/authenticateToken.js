@@ -11,7 +11,8 @@ const authenticateToken = (req,res,next)=>{
     if(error){
         return res.sendStatus("403");
     }
-    console.log("Verified user Id",user);
+    //console.log("Verified user Id",user);
+    req.user = user;
     next();
    })
    
