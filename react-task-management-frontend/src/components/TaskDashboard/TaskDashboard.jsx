@@ -14,8 +14,16 @@ import {
   MDBTableHead,
   MDBTooltip,
 } from "mdb-react-ui-kit";
+import Box from "@mui/material/Box";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+
 import styles from "./TaskDashboard.module.css";
 import { API_BASE_URL } from "../../config";
+import DatePickerValue from "./DatePicker";
+import dayjs from "dayjs";
 
 export default function Register() {
   const [tasks, setTasks] = useState([]);
@@ -24,9 +32,35 @@ export default function Register() {
     title: "",
     description: "",
     priority: "Medium",
+    dueDate: dayjs(),
   });
 
   const isLoggedIn = localStorage.getItem("token") ? true : false;
+  const [sortBy, setSortBy] = React.useState("");
+  function sort_by_priority ( data ) {
+    var prs = ['High', 'Medium', 'Low'];
+     return data.sort(function ( a, b ) {
+        var x = prs.indexOf(a.priority);
+        var y = prs.indexOf(b.priority);
+
+        if ( x < y ) return -1 ;
+        if ( x > y ) return 1 ;
+        return 0;
+    });
+}
+  const handleChange = (event) => {
+    let sortedTasks =[]
+    setSortBy(event.target.value);
+    if(event.target.value === "priority"){
+      sortedTasks=sort_by_priority( [...tasks]);
+ 
+    }else{
+      sortedTasks= [...tasks];
+      sortedTasks.sort((a,b)=> new Date(a.dueDate)- new Date(b.dueDate));
+    }
+    console.log(sortedTasks);
+    setTasks(sortedTasks);
+  };
 
   useEffect(() => {
     fetchTasks();
@@ -92,6 +126,12 @@ export default function Register() {
       [name]: value,
     }));
   };
+  const handleFormDueDate = (newDate) => {
+    setFormTask((prevTask) => ({
+      ...prevTask,
+      dueDate: newDate,
+    }));
+  };
 
   const handleCreateTask = async (e) => {
     e.preventDefault();
@@ -111,6 +151,7 @@ export default function Register() {
         title: "",
         description: "",
         priority: "Medium",
+        dueDate: dayjs(),
       });
       fetchTasks(); // Refresh the tasks list to reflect the new task
     } catch (error) {
@@ -124,6 +165,7 @@ export default function Register() {
         <tr>
           <th scope="col">{status}</th>
           <th scope="col">Task</th>
+          <th scope="col">Due Date</th>
           <th scope="col">Priority</th>
           <th scope="col">Actions</th>
         </tr>
@@ -140,6 +182,9 @@ export default function Register() {
               <span style={{ fontSize: "small", color: "gray" }}>
                 {task.description}
               </span>
+            </td>
+            <td className="align-middle">
+              <span style={{ fontWeight: "bold" }}>{task.dueDate}</span>
             </td>
             <td className="align-middle">
               <h6 className="mb-0">
@@ -240,6 +285,10 @@ export default function Register() {
                       onChange={handleFormChange}
                       required
                     />
+                    <DatePickerValue
+                      dueDate={formTask.dueDate}
+                      handleDueDate={handleFormDueDate}
+                    />
                     <select
                       className="browser-default custom-select mx-4 my-4 "
                       name="priority"
@@ -250,6 +299,7 @@ export default function Register() {
                       <option value="Medium">Medium</option>
                       <option value="Low">Low</option>
                     </select>
+
                     <MDBBtn type="submit" className="my-4 mx-4">
                       Save Task
                     </MDBBtn>
@@ -279,7 +329,23 @@ export default function Register() {
                     </div>
                   </div>
                 )}
-
+                {isLoggedIn && tasks && tasks.length > 0 && (
+                  <Box sx={{ minWidth: 500 }}>
+                    <FormControl sx={{ minWidth: 200 }}>
+                      <InputLabel id="sortBy-label">Sort By</InputLabel>
+                      <Select
+                        labelId="sortBy-label"
+                        id="sortBy-select"
+                        value={sortBy}
+                        label="Sort By"
+                        onChange={handleChange}
+                      >
+                        <MenuItem value="dueDate">Due Date</MenuItem>
+                        <MenuItem value="priority">Priority</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+                )}
                 {isLoggedIn &&
                   tasks.filter((task) => !task.isCompletedTask).length > 0 && (
                     <div>
